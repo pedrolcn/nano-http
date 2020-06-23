@@ -1,7 +1,11 @@
 [package]
 name = "mock-it"
 version = "0.1.0"
-authors = ["Pedro Nascimento <pedro.nascimento@bitcapital.com.br>"]
+description = "Minimalistic command-line HTTP server"
+license="MIT"
+repository="https://github.com/pedrolcn/mock-it"
+readme="README.md"
+authors = ["Pedro Nascimento <pedrolcn@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
