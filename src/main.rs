@@ -3,7 +3,7 @@ use tide::{http::Method, Response, Body, Request};
 use femme;
 
 #[derive(Debug, StructOpt, Clone)]
-#[structopt(name="mock-it")]
+#[structopt(name="nano-http")]
 struct Options {
     /// The URL path to mock
     #[structopt(long)]
