@@ -25,7 +25,7 @@ struct Options {
 #[async_std::main]
 async fn main() -> Result<(), std::io::Error> {
     let args: Options = Options::from_args();
-    femme::start(tide::log::Level::Debug.to_level_filter()).unwrap();
+    femme::with_level(tide::log::Level::Debug.to_level_filter());
 
     let mut app = tide::with_state(args.clone());
     let mut route = app.at(args.path.as_str());
