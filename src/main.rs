@@ -45,8 +45,8 @@ async fn main() -> Result<(), std::io::Error> {
             Method::Get => route.get(handler),
             Method::Post => route.post(handler),
             Method::Put => route.put(handler),
-            Method::Patch => route.put(handler),
-            Method::Delete => route.put(handler),
+            Method::Patch => route.patch(handler),
+            Method::Delete => route.delete(handler),
             _ => panic!(format!("Method not supported {}", method))
         }
     };
