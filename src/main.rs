@@ -1,9 +1,9 @@
-use structopt::StructOpt;
-use tide::{http::Method, Response, Body, Request};
 use femme;
+use structopt::StructOpt;
+use tide::{http::Method, Body, Request, Response};
 
 #[derive(Debug, StructOpt, Clone)]
-#[structopt(name="nano-http")]
+#[structopt(name = "nano-http")]
 struct Options {
     /// The URL path to mock
     #[structopt(long)]
@@ -18,7 +18,7 @@ struct Options {
     respond_with: String,
 
     /// The response content-type
-    #[structopt(short="t", long, default_value="application/json")]
+    #[structopt(short = "t", long, default_value = "application/json")]
     content_type: String,
 }
 
@@ -47,8 +47,8 @@ async fn main() -> Result<(), std::io::Error> {
             Method::Put => route.put(handler),
             Method::Patch => route.patch(handler),
             Method::Delete => route.delete(handler),
-            _ => panic!(format!("Method not supported {}", method))
-        }
+            _ => panic!(format!("Method not supported {}", method)),
+        },
     };
 
     app.listen("127.0.0.1:8080").await?;
