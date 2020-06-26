@@ -20,6 +20,10 @@ struct Options {
     /// The response content-type
     #[structopt(short = "t", long, default_value = "application/json")]
     content_type: String,
+
+    /// The port on which to listen for requests
+    #[structopt(short, long, default_value = "3000")]
+    port: u16,
 }
 
 #[async_std::main]
@@ -51,6 +55,6 @@ async fn main() -> Result<(), std::io::Error> {
         },
     };
 
-    app.listen("127.0.0.1:8080").await?;
+    app.listen(format!("127.0.0.1:{}", args.port)).await?;
     Ok(())
 }
