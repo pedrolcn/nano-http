@@ -694,7 +694,7 @@ dependencies = [
 
 [[package]]
 name = "nano-http"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "async-std",
  "femme",
