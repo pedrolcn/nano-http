@@ -2,7 +2,7 @@ use femme;
 use structopt::StructOpt;
 use tide::{http::Method, Body, Request, Response};
 
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Debug, StructOpt)]
 #[structopt(name = "nano-http")]
 struct Options {
     /// The URL path to mock
@@ -26,24 +26,34 @@ struct Options {
     port: u16,
 }
 
+struct State {
+    response: String,
+}
+
 #[async_std::main]
 async fn main() -> Result<(), std::io::Error> {
-    let args: Options = Options::from_args();
+    let Options {
+        port,
+        respond_with: response,
+        method,
+        content_type,
+        path,
+    } = Options::from_args();
     femme::with_level(tide::log::Level::Debug.to_level_filter());
 
-    let mut app = tide::with_state(args.clone());
-    let mut route = app.at(args.path.as_str());
+    let mut app = tide::with_state(State { response });
+    let mut route = app.at(path.as_str());
 
-    let handler = |req: Request<Options>| async move {
+    let handler = |req: Request<State>| async move {
         let state = req.state();
 
         let mut res = Response::new(200);
-        res.set_body(Body::from_string(state.respond_with.clone()));
+        res.set_body(Body::from_string(state.response.clone()));
         res.set_content_type(tide::http::mime::JSON);
         Ok(res)
     };
 
-    match args.method {
+    match method {
         None => route.all(handler),
         Some(method) => match method {
             Method::Get => route.get(handler),
@@ -55,6 +65,6 @@ async fn main() -> Result<(), std::io::Error> {
         },
     };
 
-    app.listen(format!("127.0.0.1:{}", args.port)).await?;
+    app.listen(format!("127.0.0.1:{}", port)).await?;
     Ok(())
 }
