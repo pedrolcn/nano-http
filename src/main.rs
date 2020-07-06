@@ -1,6 +1,5 @@
-use femme;
+use actix_web::{web, App, HttpResponse, HttpServer};
 use structopt::StructOpt;
-use tide::{http::Method, Body, Request, Response};
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "nano-http")]
@@ -11,7 +10,7 @@ struct Options {
 
     /// The HTTP method to mock
     #[structopt(short, long)]
-    method: Option<Method>,
+    method: Option<String>,
 
     /// The response to be sent
     #[structopt(short, long)]
@@ -30,8 +29,8 @@ struct State {
     response: String,
 }
 
-#[async_std::main]
-async fn main() -> Result<(), std::io::Error> {
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
     let Options {
         port,
         respond_with: response,
@@ -39,32 +38,38 @@ async fn main() -> Result<(), std::io::Error> {
         content_type,
         path,
     } = Options::from_args();
-    femme::with_level(tide::log::Level::Debug.to_level_filter());
+    if std::env::var_os("RUST_lOG").is_none() {
+        std::env::set_var("RUST_LOG", "info");
+    }
+    pretty_env_logger::init();
 
-    let mut app = tide::with_state(State { response });
-    let mut route = app.at(path.as_str());
-
-    let handler = |req: Request<State>| async move {
-        let state = req.state();
-
-        let mut res = Response::new(200);
-        res.set_body(Body::from_string(state.response.clone()));
-        res.set_content_type(tide::http::mime::JSON);
-        Ok(res)
+    let handler = |state: web::Data<State>| {
+        HttpResponse::Ok()
+            .content_type("application/json")
+            .body(&state.response)
     };
 
-    match method {
-        None => route.all(handler),
-        Some(method) => match method {
-            Method::Get => route.get(handler),
-            Method::Post => route.post(handler),
-            Method::Put => route.put(handler),
-            Method::Patch => route.patch(handler),
-            Method::Delete => route.delete(handler),
-            _ => panic!(format!("Method not supported {}", method)),
-        },
-    };
-
-    app.listen(format!("127.0.0.1:{}", port)).await?;
-    Ok(())
+    HttpServer::new(move || {
+        App::new()
+            .data(State {
+                response: response.clone(),
+            })
+            .route(
+                path.as_str(),
+                match method.clone() {
+                    None => web::route().to(handler),
+                    Some(method) => match method.as_str() {
+                        "GET" => web::get().to(handler),
+                        "POST" => web::post().to(handler),
+                        "PUT" => web::put().to(handler),
+                        "PATCH" => web::patch().to(handler),
+                        "DELETE" => web::delete().to(handler),
+                        _ => panic!(format!("Method not supported {}", method)),
+                    },
+                },
+            )
+    })
+    .bind(format!("127.0.0.1:{}", port))?
+    .run()
+    .await
 }
