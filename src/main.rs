@@ -24,10 +24,15 @@ struct Options {
     /// The port on which to listen for requests
     #[structopt(short, long, default_value = "3000")]
     port: u16,
+
+    /// The respose status code
+    #[structopt(long, default_value = "200")]
+    status: u16,
 }
 
 struct State {
     response: String,
+    status: u16,
 }
 
 #[async_std::main]
@@ -38,16 +43,17 @@ async fn main() -> Result<(), std::io::Error> {
         method,
         content_type,
         path,
+        status,
     } = Options::from_args();
     femme::with_level(tide::log::Level::Debug.to_level_filter());
 
-    let mut app = tide::with_state(State { response });
+    let mut app = tide::with_state(State { response, status });
     let mut route = app.at(path.as_str());
 
     let handler = |req: Request<State>| async move {
         let state = req.state();
 
-        let mut res = Response::new(200);
+        let mut res = Response::new(state.status);
         res.set_body(Body::from_string(state.response.clone()));
         res.set_content_type(tide::http::mime::JSON);
         Ok(res)
